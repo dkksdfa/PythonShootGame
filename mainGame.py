@@ -15,7 +15,7 @@ import random
 # 게임 초기화
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption('飞机大战')
+pygame.display.set_caption('항공기 전쟁')
 
 # 게임 음악 로드
 bullet_sound = pygame.mixer.Sound('resources/sound/bullet.wav')
