@@ -39,6 +39,9 @@ class Player(pygame.sprite.Sprite):
         self.bullets = pygame.sprite.Group()            # 플레이어의 항공기에서 발사된 총알 모음
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
+        self.maxHealth = 3                              # 최대 생명력
+        self.health = self.maxHealth                    # 생명력
+
 
     def shoot(self, bullet_img):
         bullet = Bullet(bullet_img, self.rect.midtop)

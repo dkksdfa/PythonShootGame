@@ -16,6 +16,7 @@ import random
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption('항공기 전쟁')
+clock = pygame.time.Clock()
 
 # 게임 음악 로드
 bullet_sound = pygame.mixer.Sound('resources/sound/bullet.wav')
@@ -34,6 +35,12 @@ game_over = pygame.image.load('resources/image/gameover.png')
 
 filename = 'resources/image/shoot.png'
 plane_img = pygame.image.load(filename)
+
+#생명력 이미지 로드
+black_heart = pygame.image.load('resources/image/black_heart.png')
+black_heart = pygame.transform.scale(black_heart, (30,30))
+white_heart = pygame.image.load('resources/image/white_heart.png')
+white_heart = pygame.transform.scale(white_heart, (30,30))
 
 # 플레이어 관련 매개변수 설정  
 player_rect = []
@@ -71,8 +78,6 @@ player_down_index = 16
 
 score = 0
 
-clock = pygame.time.Clock()
-
 running = True
 
 while running:
@@ -80,7 +85,7 @@ while running:
     clock.tick(45)
 
     # 총알 발사 빈도 및 총알 발사 빈도 제어
-    if not player.is_hit:
+    if player.health > 0:
         if shoot_frequency % 15 == 0:
             bullet_sound.play()
             player.shoot(bullet_img)
@@ -111,8 +116,10 @@ while running:
             enemies_down.add(enemy)
             enemies1.remove(enemy)
             player.is_hit = True
-            game_over_sound.play()
-            break
+            player.health -= 1
+            if player.health <= 0:
+                game_over_sound.play()
+                break
         if enemy.rect.top > SCREEN_HEIGHT:
             enemies1.remove(enemy)
 
@@ -124,9 +131,16 @@ while running:
     # 배경 그리기
     screen.fill(0)
     screen.blit(background, (0, 0))
-
+    
     # 플레이어 비행기 그리기
-    if not player.is_hit:
+    if player.is_hit and player.health > 0: #데미지를 입었으나 죽지는 않음
+        player.img_index = player_down_index // 8
+        screen.blit(player.image[player.img_index], player.rect)
+        player_down_index += 1
+        if player_down_index > 47:
+            player.is_hit = False
+            player_down_index = 16
+    elif player.health > 0:
         screen.blit(player.image[player.img_index], player.rect)
         # 비행기에 애니메이션을 적용하기 위해 그림 인덱스를 변경했습니다.
         player.img_index = shoot_frequency // 8
@@ -152,7 +166,14 @@ while running:
     player.bullets.draw(screen)
     enemies1.draw(screen)
 
-    # 무승부
+    #생명력 그리기
+    for i in range(player.health):
+        screen.blit(black_heart, (i*30+5, 5))
+    for i in range(1, player.maxHealth - player.health + 1):
+        screen.blit(white_heart, ((player.health-1)*30+5+(i*30), 5))
+
+
+    # 점수 그리기
     score_font = pygame.font.Font(None, 36)
     score_text = score_font.render(str(score), True, (128, 128, 128))
     text_rect = score_text.get_rect()
@@ -170,7 +191,7 @@ while running:
     # 키보드 이벤트 수신
     key_pressed = pygame.key.get_pressed()
     # 플레이어가 명중되면 효과가 없습니다.
-    if not player.is_hit:
+    if player.health > 0:
         if key_pressed[K_w] or key_pressed[K_UP]:
             player.moveUp()
         if key_pressed[K_s] or key_pressed[K_DOWN]:
@@ -179,6 +200,9 @@ while running:
             player.moveLeft()
         if key_pressed[K_d] or key_pressed[K_RIGHT]:
             player.moveRight()
+        if key_pressed[K_LSHIFT] or key_pressed[K_RSHIFT]:
+            print("폭탄")
+
 
 
 font = pygame.font.Font(None, 48)
