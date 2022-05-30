@@ -120,6 +120,9 @@ while running:
     if player.health > 0:
         if key_pressed[K_LSHIFT] or key_pressed[K_RSHIFT]:
             print("폭탄")
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            print(pos)
 
 while 1:
     for event in pygame.event.get():

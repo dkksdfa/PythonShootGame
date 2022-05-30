@@ -86,7 +86,7 @@ while running:
 
     # 총알 발사 빈도 및 총알 발사 빈도 제어
     if player.health > 0:
-        if shoot_frequency % 15 == 0:
+        if shoot_frequency % 3 == 0:
             bullet_sound.play()
             player.shoot(bullet_img)
         shoot_frequency += 1
