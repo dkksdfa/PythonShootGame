@@ -87,8 +87,17 @@ while running:
     # 배경 그리기
     screen.fill(0)
     screen.blit(background, (0, 0))
-    screen.blit(plane_img.subsurface(105, 120, 55, 102), (0,0))
-    screen.blit(plane_img.subsurface(260, 390, 55, 102), (200,400))
+    #screen.blit(plane_img.subsurface(105, 120, 55, 102), (0,0)) #폭탄
+    #screen.blit(plane_img.subsurface(269, 398, 54, 86), (0,0)) #총알
+
+    #screen.blit(plane_img.subsurface(169, 752, 164, 255), (0, 0)) #보스
+    #screen.blit(plane_img.subsurface(338, 752, 164, 255), (0,0)) #보스
+    #screen.blit(plane_img.subsurface(507, 752, 164, 255), (0, 0)) #보스
+    #screen.blit(plane_img.subsurface(676, 752, 164, 255), (0, 0)) #보스
+    #screen.blit(plane_img.subsurface(845, 752, 157, 255), (0, 0)) #보스
+    #screen.blit(plane_img.subsurface(0, 225, 164, 255),(0,0)) #보스
+    #screen.blit(plane_img.subsurface(0, 488, 164, 255),(0,0)) #보스
+    #screen.blit(plane_img.subsurface(164, 488, 164, 255),(0,0)) #보스
     # 업데이트 화면
     pygame.display.update()
 
