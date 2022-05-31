@@ -87,7 +87,7 @@ while running:
     # 배경 그리기
     screen.fill(0)
     screen.blit(background, (0, 0))
-    #screen.blit(plane_img.subsurface(105, 120, 55, 102), (0,0)) #폭탄 아이템
+    screen.blit(plane_img.subsurface(105, 120, 55, 102), (0,0)) #폭탄 아이템
     #screen.blit(plane_img.subsurface(269, 398, 54, 86), (0,0)) #총알 아이템
 
     #screen.blit(plane_img.subsurface(830, 693, 23, 53), (0, 0)) 폭탄

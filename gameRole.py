@@ -5,6 +5,7 @@ Created on Wed Sep 11 16:36:03 2013
 @author: Leo
 """
 
+from turtle import right
 import pygame
 
 SCREEN_WIDTH = 480
@@ -13,6 +14,14 @@ SCREEN_HEIGHT = 800
 TYPE_SMALL = 1
 TYPE_MIDDLE = 2
 TYPE_BIG = 3
+
+class BulletItem(pygame.sprite.Sprite):
+    def __init__(self, bullet_item_img, init_pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = bullet_item_img
+        self.rect = self.image.get_rect()
+        self.rect.center = init_pos
+        self.speed = 2
 
 # 총알
 class Bullet(pygame.sprite.Sprite):
@@ -26,6 +35,18 @@ class Bullet(pygame.sprite.Sprite):
     def move(self):
         self.rect.top -= self.speed
 
+class Bomb(pygame.sprite.Sprite):
+    def __init__(self, bomb_img, init_pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = bomb_img
+        self.rect = self.image.get_rect()
+        self.rect .midbottom = init_pos
+        self.speed = 3
+        self.timer = 80
+    def move(self):
+        self.rect.top -= self.speed
+        self.timer -= 1
+
 # 플레이어 클래스
 class Player(pygame.sprite.Sprite):
     def __init__(self, plane_img, player_rect, init_pos):
@@ -37,11 +58,17 @@ class Player(pygame.sprite.Sprite):
         self.rect.topleft = init_pos                    # 사각형의 왼쪽 위 모서리 좌표를 초기화합니다.
         self.speed = 8                                  # 플레이어 속도를 초기화합니다. 여기에 확실한 값이 있습니다.
         self.bullets = pygame.sprite.Group()            # 플레이어의 항공기에서 발사된 총알 모음
+        self.bombs = pygame.sprite.Group()              # 발사된 폭탄 모음
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
         self.maxHealth = 3                              # 최대 생명력
         self.health = self.maxHealth                    # 생명력
+        self.maxBomb = 3
+        self.bomb = self.maxBomb
 
+    def throw(self, bomb_img):
+        bomb = Bomb(bomb_img, (self.rect.midtop))
+        self.bombs.add(bomb)
 
     def shoot(self, bullet_img):
         bullet = Bullet(bullet_img, (self.rect.centerx, self.rect.top))
