@@ -30,7 +30,8 @@ pygame.mixer.music.play(-1, 0.0)
 pygame.mixer.music.set_volume(0.25)
 
 # 배경 이미지 로드
-background = pygame.image.load('resources/image/background.png').convert()
+background = pygame.image.load('resources/image/background.png')
+background = pygame.transform.scale(background, (600, 1000))
 game_over = pygame.image.load('resources/image/gameover.png')
 
 filename = 'resources/image/shoot.png'
@@ -145,6 +146,19 @@ while running:
                 break
         if enemy.rect.top > SCREEN_HEIGHT:
             enemies1.remove(enemy)
+
+    # 아이템 이동, 창범위를 벗어나면 튕기도록
+    for item in items:
+        item.move()
+        # 플레이어가 아이템을 획득했는지 확인
+        if pygame.sprite.collide_circle(item, player):
+            #아이템 획득 이벤트
+            items.remove(item)
+        if item.rect.top <= 0 or item.rect.bottom >= SCREEN_HEIGHT:
+            item.ySpeed *= -1
+        if item.rect.left <= 0 or item.rect.right >= SCREEN_WIDTH:
+            item.xSpeed *= -1
+
     # 파괴 애니메이션을 렌더링하는 데 사용되는 파괴된 적 항공기 그룹에 적중된 적 항공기 개체를 추가합니다.
     enemies1_down = pygame.sprite.groupcollide(enemies1, player.bullets, 1, 1)
     for enemy_down in enemies1_down:
@@ -180,13 +194,15 @@ while running:
         if enemy_down.down_index > 7:
             enemies_down.remove(enemy_down)
             score += 10
-            item = BulletItem(bullet_item_img, enemy_down.rect.center)
-            items.add(item)
+            index = random.randint(0, 1)
+            if index <= 1:
+                item = Item(bullet_item_img, bomb_item_img, index, enemy_down.rect.center)
+                items.add(item)
             continue
         screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
         enemy_down.down_index += 1
 
-    # 총알과 적 비행기 그리기
+    # 총알, 폭탄, 적, 아이템 그리기
     player.bullets.draw(screen)
     player.bombs.draw(screen)
     enemies1.draw(screen)

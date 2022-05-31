@@ -8,20 +8,26 @@ Created on Wed Sep 11 16:36:03 2013
 from turtle import right
 import pygame
 
-SCREEN_WIDTH = 480
-SCREEN_HEIGHT = 800
+SCREEN_WIDTH = 600
+SCREEN_HEIGHT = 1000
 
 TYPE_SMALL = 1
 TYPE_MIDDLE = 2
 TYPE_BIG = 3
 
-class BulletItem(pygame.sprite.Sprite):
-    def __init__(self, bullet_item_img, init_pos):
+class Item(pygame.sprite.Sprite):
+    def __init__(self, bullet_item_img, bomb_item_img, item_index, init_pos):
         pygame.sprite.Sprite.__init__(self)
-        self.image = bullet_item_img
+        self.images = [bullet_item_img, bomb_item_img]
+        self.index = item_index
+        self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = init_pos
-        self.speed = 2
+        self.xSpeed = 2
+        self.ySpeed = 2
+    def move(self):
+        self.rect.left -= self.xSpeed
+        self.rect.top -= self.ySpeed
 
 # 총알
 class Bullet(pygame.sprite.Sprite):
