@@ -31,7 +31,6 @@ pygame.mixer.music.set_volume(0.25)
 
 # 배경 이미지 로드
 background = pygame.image.load('resources/image/background.png')
-background = pygame.transform.scale(background, (600, 1000))
 game_over = pygame.image.load('resources/image/gameover.png')
 
 filename = 'resources/image/shoot.png'
@@ -54,21 +53,23 @@ player_rect.append(pygame.Rect(432, 624, 102, 126))
 player_pos = [200, 600]
 player = Player(plane_img, player_rect, player_pos)
 
-# 글머리 기호 개체에서 사용하는 표면 관련 매개변수 정의
+# 총알
 bullet_rect = pygame.Rect(1004, 987, 9, 21)
 bullet_img = plane_img.subsurface(bullet_rect)
 
-#총알 아이템
+# 총알 아이템
 bullet_item_rect = pygame.Rect(269, 398, 54, 86)
 bullet_item_img = plane_img.subsurface(bullet_item_rect)
+bullet_item_img = pygame.transform.scale(bullet_item_img, (40, 65))
 
-#폭탄
+# 폭탄
 bomb_rect = pygame.Rect(830, 693, 23, 53)
 bomb_img = plane_img.subsurface(bomb_rect)
 
-#폭탄 아이템
+# 폭탄 아이템
 bomb_item_rect = pygame.Rect(105, 120, 55, 102)
 bomb_item_img  = plane_img.subsurface(bomb_item_rect)
+bomb_item_img = pygame.transform.scale(bomb_item_img, (40, 65))
 
 # 적 항공기 개체가 사용하는 표면 관련 매개변수 정의
 enemy1_rect = pygame.Rect(534, 612, 57, 43)
@@ -150,14 +151,38 @@ while running:
     # 아이템 이동, 창범위를 벗어나면 튕기도록
     for item in items:
         item.move()
+        item.time += 1
         # 플레이어가 아이템을 획득했는지 확인
         if pygame.sprite.collide_circle(item, player):
             #아이템 획득 이벤트
+            if item.index == 0 and player.bullet < 10:
+                player.bullet += 1
+            elif item.index == 1 and player.bomb < 3:
+                player.bomb += 1
             items.remove(item)
         if item.rect.top <= 0 or item.rect.bottom >= SCREEN_HEIGHT:
             item.ySpeed *= -1
         if item.rect.left <= 0 or item.rect.right >= SCREEN_WIDTH:
             item.xSpeed *= -1
+        if item.rect.top < 300:
+            item.yTime += 1
+            if item.yTime > 240:
+                item.ySpeed = 2
+                item.ytime = 0
+        if item.time > 1200:
+            items.remove(item)
+        elif item.time > 1150:
+            item.image.set_alpha(256)
+        elif item.time > 1100:
+            item.image.set_alpha(128)
+        elif item.time > 1050:
+            item.image.set_alpha(256)
+        elif item.time > 1000:
+            item.image.set_alpha(128)
+        elif item.time > 950:
+            item.image.set_alpha(256)
+        elif item.time > 900:
+            item.image.set_alpha(128)
 
     # 파괴 애니메이션을 렌더링하는 데 사용되는 파괴된 적 항공기 그룹에 적중된 적 항공기 개체를 추가합니다.
     enemies1_down = pygame.sprite.groupcollide(enemies1, player.bullets, 1, 1)

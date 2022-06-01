@@ -8,8 +8,8 @@ Created on Wed Sep 11 16:36:03 2013
 from turtle import right
 import pygame
 
-SCREEN_WIDTH = 600
-SCREEN_HEIGHT = 1000
+SCREEN_WIDTH = 480
+SCREEN_HEIGHT = 800
 
 TYPE_SMALL = 1
 TYPE_MIDDLE = 2
@@ -25,18 +25,21 @@ class Item(pygame.sprite.Sprite):
         self.rect.center = init_pos
         self.xSpeed = 2
         self.ySpeed = 2
+        self.yTime = 0
+        self.time = 0
     def move(self):
-        self.rect.left -= self.xSpeed
-        self.rect.top -= self.ySpeed
+        self.rect.left += self.xSpeed
+        self.rect.top += self.ySpeed
 
 # 총알
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, bullet_img, init_pos):
+    def __init__(self, bullet_img, init_pos, damage):
         pygame.sprite.Sprite.__init__(self)
         self.image = bullet_img
         self.rect = self.image.get_rect()
-        self.rect.midbottom = init_pos
+        self.rect.topleft = init_pos
         self.speed = 20
+        self.damage = damage
 
     def move(self):
         self.rect.top -= self.speed
@@ -59,27 +62,32 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = []                                 # 플레이어 오브젝트 스프라이트 이미지를 저장할 목록
         for i in range(len(player_rect)):
-            self.image.append(plane_img.subsurface(player_rect[i]).convert_alpha())
+            image = plane_img.subsurface(player_rect[i])
+            image = pygame.transform.scale(image, (85,102))
+            self.image.append(image)
         self.rect = player_rect[0]                      # 이미지가 위치한 사각형 초기화
         self.rect.topleft = init_pos                    # 사각형의 왼쪽 위 모서리 좌표를 초기화합니다.
-        self.speed = 8                                  # 플레이어 속도를 초기화합니다. 여기에 확실한 값이 있습니다.
+        self.speed = 6                                  # 플레이어 속도를 초기화합니다. 여기에 확실한 값이 있습니다.
         self.bullets = pygame.sprite.Group()            # 플레이어의 항공기에서 발사된 총알 모음
         self.bombs = pygame.sprite.Group()              # 발사된 폭탄 모음
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
         self.maxHealth = 3                              # 최대 생명력
         self.health = self.maxHealth                    # 생명력
-        self.maxBomb = 3
-        self.bomb = self.maxBomb
+        self.bomb = 0                                   # 폭탄
+        self.bullet = 1                                 # 총알
 
     def throw(self, bomb_img):
         bomb = Bomb(bomb_img, (self.rect.midtop))
         self.bombs.add(bomb)
 
     def shoot(self, bullet_img):
-        bullet = Bullet(bullet_img, (self.rect.centerx, self.rect.top))
-        #bullet = Bullet(bullet_img, self.rect.midtop)
-        self.bullets.add(bullet)
+        bulletsWidth = (self.bullet*12-3)/2+7
+        for i in range(0, self.bullet):
+            posX = (self.rect.centerx-bulletsWidth)+i*12
+            posY = self.rect.top
+            bullet = Bullet(bullet_img, (posX, posY), self.bullet)
+            self.bullets.add(bullet)
 
     def moveUp(self):
         if self.rect.top <= 0:
@@ -113,7 +121,7 @@ class Enemy(pygame.sprite.Sprite):
        self.rect = self.image.get_rect()
        self.rect.topleft = init_pos
        self.down_imgs = enemy_down_imgs
-       self.speed = 2
+       self.speed = 5
        self.down_index = 0
 
     def move(self):
