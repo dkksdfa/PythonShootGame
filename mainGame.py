@@ -110,9 +110,10 @@ while running:
             shoot_frequency = 0
 
     # 적 비행기 생성
-    if enemy_frequency % 60 == 0:
+    if enemy_frequency % 30 == 0:
         enemy1_pos = [random.randint(0, SCREEN_WIDTH - enemy1_rect.width), 0]
-        enemy1 = Enemy(enemy1_img, enemy1_down_imgs, enemy1_pos)
+        enemy1_moveInt = random.randint(1,3)
+        enemy1 = Enemy1(enemy1_img, enemy1_down_imgs, enemy1_pos, enemy1_moveInt)
         enemies1.add(enemy1)
     enemy_frequency += 1
     if enemy_frequency >= 120:
@@ -135,7 +136,12 @@ while running:
 
     # 적 이동, 창 범위를 초과하면 삭제
     for enemy in enemies1:
-        enemy.move()
+        if enemy.moveInt == 1:
+            enemy.move()
+        elif enemy.moveInt == 2:
+            enemy.leftToRightMove()
+        elif enemy.moveInt == 3:
+            enemy.rightToLeftMove()
         # 플레이어가 공격을 받았는지 확인
         if pygame.sprite.collide_circle(enemy, player):
             enemies_down.add(enemy)
@@ -145,7 +151,7 @@ while running:
             if player.health <= 0:
                 game_over_sound.play()
                 break
-        if enemy.rect.top > SCREEN_HEIGHT:
+        if enemy.rect.top > SCREEN_HEIGHT or enemy.rect.right < 0 or enemy.rect.left > SCREEN_WIDTH:
             enemies1.remove(enemy)
 
     # 아이템 이동, 창범위를 벗어나면 튕기도록
@@ -155,34 +161,35 @@ while running:
         # 플레이어가 아이템을 획득했는지 확인
         if pygame.sprite.collide_circle(item, player):
             #아이템 획득 이벤트
-            if item.index == 0 and player.bullet < 10:
+            if item.index == 0 and player.bullet < 8:
                 player.bullet += 1
             elif item.index == 1 and player.bomb < 3:
                 player.bomb += 1
             items.remove(item)
+
+        #아이템이 벽에서 튕기도록 함
         if item.rect.top <= 0 or item.rect.bottom >= SCREEN_HEIGHT:
             item.ySpeed *= -1
         if item.rect.left <= 0 or item.rect.right >= SCREEN_WIDTH:
             item.xSpeed *= -1
+        
+        #위쪽에 아이템이 오래 머물러 있다면 아래로 내려오도록 함
         if item.rect.top < 300:
             item.yTime += 1
             if item.yTime > 240:
                 item.ySpeed = 2
                 item.ytime = 0
+
+        #아이템을 20초가 지나면 파괴
         if item.time > 1200:
             items.remove(item)
-        elif item.time > 1150:
-            item.image.set_alpha(256)
-        elif item.time > 1100:
-            item.image.set_alpha(128)
-        elif item.time > 1050:
-            item.image.set_alpha(256)
-        elif item.time > 1000:
-            item.image.set_alpha(128)
-        elif item.time > 950:
-            item.image.set_alpha(256)
+
+        #15초가 지나면 깜빡거림
         elif item.time > 900:
-            item.image.set_alpha(128)
+            if item.time%100 == 0:
+                item.image.set_alpha(128)
+            elif item.time%50 == 0:
+                item.image.set_alpha(256)
 
     # 파괴 애니메이션을 렌더링하는 데 사용되는 파괴된 적 항공기 그룹에 적중된 적 항공기 개체를 추가합니다.
     enemies1_down = pygame.sprite.groupcollide(enemies1, player.bullets, 1, 1)

@@ -67,7 +67,7 @@ class Player(pygame.sprite.Sprite):
             self.image.append(image)
         self.rect = player_rect[0]                      # 이미지가 위치한 사각형 초기화
         self.rect.topleft = init_pos                    # 사각형의 왼쪽 위 모서리 좌표를 초기화합니다.
-        self.speed = 6                                  # 플레이어 속도를 초기화합니다. 여기에 확실한 값이 있습니다.
+        self.speed = 5                                  # 플레이어 속도를 초기화합니다. 여기에 확실한 값이 있습니다.
         self.bullets = pygame.sprite.Group()            # 플레이어의 항공기에서 발사된 총알 모음
         self.bombs = pygame.sprite.Group()              # 발사된 폭탄 모음
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
@@ -114,8 +114,8 @@ class Player(pygame.sprite.Sprite):
             self.rect.left += self.speed
 
 # 적군
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, enemy_img, enemy_down_imgs, init_pos):
+class Enemy1(pygame.sprite.Sprite):
+    def __init__(self, enemy_img, enemy_down_imgs, init_pos, move_int):
        pygame.sprite.Sprite.__init__(self)
        self.image = enemy_img
        self.rect = self.image.get_rect()
@@ -123,6 +123,16 @@ class Enemy(pygame.sprite.Sprite):
        self.down_imgs = enemy_down_imgs
        self.speed = 5
        self.down_index = 0
+       self.moveInt = move_int
 
     def move(self):
         self.rect.top += self.speed
+    def leftToRightMove(self):
+        self.rect.top += self.speed
+        self.rect.left += self.rect.top*0.01
+    def rightToLeftMove(self):
+        self.rect.top += self.speed
+        self.rect.left -= self.rect.top*0.01
+
+#class Enemy1(pygame.sprite.Sprite):
+

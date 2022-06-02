@@ -101,13 +101,13 @@ while running:
     #screen.blit(plane_img.subsurface(0, 488, 164, 255),(0,0)) #보스
     #screen.blit(plane_img.subsurface(164, 488, 164, 255),(0,0)) #보스
 
-    #screen.blit(plane_img.subsurface(1, 4, 67, 87), (0,0)) #적
-    #screen.blit(plane_img.subsurface(433, 529, 67, 94), (0,0)) #적
-    #screen.blit(plane_img.subsurface(535, 655, 67, 94), (0,0)) #적
-    #screen.blit(plane_img.subsurface(604, 655, 67, 94), (0,0)) #적
-    #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) #적
+    #screen.blit(plane_img.subsurface(1, 4, 67, 87), (0,0)) #적 평상시
+    #screen.blit(plane_img.subsurface(433, 529, 67, 94), (0,0)) #적 데미지
+    #screen.blit(plane_img.subsurface(535, 655, 67, 94), (0,0)) #적 파괴1
+    #screen.blit(plane_img.subsurface(604, 655, 67, 94), (0,0)) #적 파괴2
+    #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) #적 파괴3
 
-    screen.blit(plane_img.subsurface(162, 360, 96, 126), (0,0)) # 플레이어
+    #screen.blit(plane_img.subsurface(162, 360, 96, 126), (0,0)) # 플레이어
     #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) # 플레이어
     # 업데이트 화면
     pygame.display.update()
