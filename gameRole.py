@@ -65,7 +65,7 @@ class Player(pygame.sprite.Sprite):
         self.image = []                                 # 플레이어 오브젝트 스프라이트 이미지를 저장할 목록
         for i in range(len(player_rect)):
             image = plane_img.subsurface(player_rect[i])
-            image = pygame.transform.scale(image, (85,102))
+            image = pygame.transform.scale(image, (68,84))
             self.image.append(image)
         self.rect = player_rect[0]                      # 이미지가 위치한 사각형 초기화
         self.rect.topleft = init_pos                    # 사각형의 왼쪽 위 모서리 좌표를 초기화합니다.
@@ -114,6 +114,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.left = SCREEN_WIDTH - self.rect.width
         else:
             self.rect.left += self.speed
+    def damage(self):
+        self.is_hit = True
+        self.health -= 1
 
 # 적군
 class Enemy1(pygame.sprite.Sprite):

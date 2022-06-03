@@ -94,6 +94,7 @@ enemy2_down_imgs.append(plane_img.subsurface(604, 655, 67, 94))
 enemy2_down_imgs.append(plane_img.subsurface(673, 655, 70, 94))
 enemies2 = pygame.sprite.Group()
 enemies2_down = pygame.sprite.Group()
+enemies2_bullets_temp = pygame.sprite.Group()
 
 items = pygame.sprite.Group()
 
@@ -156,8 +157,7 @@ while running:
         if pygame.sprite.collide_circle(enemy1, player):
             enemies1_down.add(enemy1)
             enemies1.remove(enemy1)
-            player.is_hit = True
-            player.health -= 1
+            player.damage()
             if player.health <= 0:
                 game_over_sound.play()
                 break
@@ -168,11 +168,17 @@ while running:
         enemy2.move()
         for enemy2_bullt in enemy2.bullets:
             enemy2_bullt.move()
+            if pygame.sprite.collide_circle(enemy2_bullt, player):
+                enemy2.bullets.remove(enemy2_bullt)
+                player.damage()
             if enemy2_bullt.rect.top > SCREEN_HEIGHT:
                 enemy2.bullets.remove(enemy2_bullt)
         if enemy_shoot_frequency % 60 == 0:
             enemy2.shoot(bullet_img)
     enemy_shoot_frequency += 1
+
+    for bullets in enemies2_bullets_temp:
+        bullets.move()
 
     # 아이템 이동, 창범위를 벗어나면 튕기도록
     for item in items:
@@ -225,6 +231,7 @@ while running:
         if enemy.health <= 0:
             score += 100
             enemies2.remove(enemy)
+            enemies2_bullets_temp.add(enemy.bullets)
             enemies2_down.add(enemy)
     
     # 배경 그리기
@@ -265,12 +272,24 @@ while running:
         screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
         enemy_down.down_index += 1
 
+    for enemy_down in enemies2_down:
+        if enemy_down.down_index > 5:
+            enemies2_down.remove(enemy_down)
+            index = random.randint(0, 1)
+            if index <= 1:
+                item = Item(bullet_item_img, bomb_item_img, bullet_item_alpha_img, bomb_item_alpha_img, index, enemy_down.rect.center)
+                items.add(item)
+            continue
+        screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
+        enemy_down.down_index += 1
+
     # 총알, 폭탄, 적, 아이템 그리기
     player.bullets.draw(screen)
     player.bombs.draw(screen)
     enemies1.draw(screen)
     enemies2.draw(screen)
     items.draw(screen)
+    enemies2_bullets_temp.draw(screen)
 
     for enemy in enemies2:
         enemy.bullets.draw(screen)
