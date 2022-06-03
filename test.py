@@ -107,7 +107,7 @@ while running:
     #screen.blit(plane_img.subsurface(604, 655, 67, 94), (0,0)) #적 파괴2
     #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) #적 파괴3
 
-    #screen.blit(plane_img.subsurface(162, 360, 96, 126), (0,0)) # 플레이어
+    screen.blit(plane_img.subsurface(0, 99, 102, 126), (20,0)) # 플레이어
     #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) # 플레이어
     # 업데이트 화면
     pygame.display.update()

@@ -5,6 +5,7 @@ Created on Wed Sep 11 11:05:00 2013
 @author: Leo
 """
 
+from copy import deepcopy
 import pygame
 from sys import exit
 from pygame.locals import *
@@ -54,24 +55,26 @@ player_pos = [200, 600]
 player = Player(plane_img, player_rect, player_pos)
 
 # 총알
-bullet_rect = pygame.Rect(1004, 987, 9, 21)
-bullet_img = plane_img.subsurface(bullet_rect)
+bullet_img = plane_img.subsurface(pygame.Rect(1004, 987, 9, 21))
 
 # 총알 아이템
-bullet_item_rect = pygame.Rect(269, 398, 54, 86)
-bullet_item_img = plane_img.subsurface(bullet_item_rect)
+bullet_item_img = plane_img.subsurface(pygame.Rect(269, 398, 54, 86))
 bullet_item_img = pygame.transform.scale(bullet_item_img, (40, 65))
+bullet_item_alpha_img = plane_img.subsurface(pygame.Rect(269, 398, 54, 86))
+bullet_item_alpha_img = pygame.transform.scale(bullet_item_alpha_img, (40, 65))
+bullet_item_alpha_img.set_alpha(128)
 
 # 폭탄
-bomb_rect = pygame.Rect(830, 693, 23, 53)
-bomb_img = plane_img.subsurface(bomb_rect)
+bomb_img = plane_img.subsurface(pygame.Rect(830, 693, 23, 53))
 
 # 폭탄 아이템
-bomb_item_rect = pygame.Rect(105, 120, 55, 102)
-bomb_item_img  = plane_img.subsurface(bomb_item_rect)
+bomb_item_img  = plane_img.subsurface(pygame.Rect(105, 120, 55, 102))
 bomb_item_img = pygame.transform.scale(bomb_item_img, (40, 65))
+bomb_item_alpha_img = plane_img.subsurface(pygame.Rect(105, 120, 55, 102))
+bomb_item_alpha_img = pygame.transform.scale(bomb_item_alpha_img, (40, 65))
+bomb_item_alpha_img.set_alpha(128)
 
-# 적 항공기 개체가 사용하는 표면 관련 매개변수 정의
+# 적1 매개변수 정의
 enemy1_rect = pygame.Rect(534, 612, 57, 43)
 enemy1_img = plane_img.subsurface(enemy1_rect)
 enemy1_down_imgs = []
@@ -79,16 +82,24 @@ enemy1_down_imgs.append(plane_img.subsurface(pygame.Rect(267, 347, 57, 43)))
 enemy1_down_imgs.append(plane_img.subsurface(pygame.Rect(873, 697, 57, 43)))
 enemy1_down_imgs.append(plane_img.subsurface(pygame.Rect(267, 296, 57, 43)))
 enemy1_down_imgs.append(plane_img.subsurface(pygame.Rect(930, 697, 57, 43)))
-
 enemies1 = pygame.sprite.Group()
+enemies1_down = pygame.sprite.Group()
 
-# 난파선 스프라이트 애니메이션을 렌더링하기 위해 난파선 저장
-enemies_down = pygame.sprite.Group()
+# 적2 매개변수 정의
+enemy2_img = plane_img.subsurface(pygame.Rect(1, 4, 67, 87))
+enemy2_damage_img = plane_img.subsurface(pygame.Rect(433, 529, 67, 94))
+enemy2_down_imgs = []
+enemy2_down_imgs.append(plane_img.subsurface(535, 655, 67, 94))
+enemy2_down_imgs.append(plane_img.subsurface(604, 655, 67, 94))
+enemy2_down_imgs.append(plane_img.subsurface(673, 655, 70, 94))
+enemies2 = pygame.sprite.Group()
+enemies2_down = pygame.sprite.Group()
 
 items = pygame.sprite.Group()
 
 shoot_frequency = 0
 enemy_frequency = 0
+enemy_shoot_frequency = 0
 
 player_down_index = 16
 
@@ -109,15 +120,19 @@ while running:
         if shoot_frequency >= 15:
             shoot_frequency = 0
 
-    # 적 비행기 생성
+    # 적1 생성
     if enemy_frequency % 30 == 0:
         enemy1_pos = [random.randint(0, SCREEN_WIDTH - enemy1_rect.width), 0]
-        enemy1_moveInt = random.randint(1,3)
-        enemy1 = Enemy1(enemy1_img, enemy1_down_imgs, enemy1_pos, enemy1_moveInt)
+        enemy1 = Enemy1(enemy1_img, enemy1_down_imgs, enemy1_pos)
         enemies1.add(enemy1)
     enemy_frequency += 1
-    if enemy_frequency >= 120:
-        enemy_frequency = 0
+
+    # 적2 생성
+    if (score%100 == 0 or score>50) and len(enemies2) == 0:        
+        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (160, 0))
+        enemies2.add(enemy2)
+        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (320, 0))
+        enemies2.add(enemy2)
 
     #폭탄 이동, 타이머가 다 되면 폭발
     for bomb in player.bombs:
@@ -125,7 +140,7 @@ while running:
         if (bomb.timer < 0):
             player.bombs.remove(bomb)
             for enemy in enemies1:
-                enemies_down.add(enemy)
+                enemies1_down.add(enemy)
                 enemies1.remove(enemy)
 
     # 총알 이동, 창 범위를 초과하면 삭제
@@ -135,24 +150,29 @@ while running:
             player.bullets.remove(bullet)
 
     # 적 이동, 창 범위를 초과하면 삭제
-    for enemy in enemies1:
-        if enemy.moveInt == 1:
-            enemy.move()
-        elif enemy.moveInt == 2:
-            enemy.leftToRightMove()
-        elif enemy.moveInt == 3:
-            enemy.rightToLeftMove()
+    for enemy1 in enemies1:
+        enemy1.move()
         # 플레이어가 공격을 받았는지 확인
-        if pygame.sprite.collide_circle(enemy, player):
-            enemies_down.add(enemy)
-            enemies1.remove(enemy)
+        if pygame.sprite.collide_circle(enemy1, player):
+            enemies1_down.add(enemy1)
+            enemies1.remove(enemy1)
             player.is_hit = True
             player.health -= 1
             if player.health <= 0:
                 game_over_sound.play()
                 break
-        if enemy.rect.top > SCREEN_HEIGHT or enemy.rect.right < 0 or enemy.rect.left > SCREEN_WIDTH:
-            enemies1.remove(enemy)
+        if enemy1.rect.top > SCREEN_HEIGHT:
+            enemies1.remove(enemy1)
+
+    for enemy2 in enemies2:
+        enemy2.move()
+        for enemy2_bullt in enemy2.bullets:
+            enemy2_bullt.move()
+            if enemy2_bullt.rect.top > SCREEN_HEIGHT:
+                enemy2.bullets.remove(enemy2_bullt)
+        if enemy_shoot_frequency % 60 == 0:
+            enemy2.shoot(bullet_img)
+    enemy_shoot_frequency += 1
 
     # 아이템 이동, 창범위를 벗어나면 튕기도록
     for item in items:
@@ -187,15 +207,26 @@ while running:
         #15초가 지나면 깜빡거림
         elif item.time > 900:
             if item.time%100 == 0:
-                item.image.set_alpha(128)
+                item.image = item.images_alpha[item.index]
             elif item.time%50 == 0:
-                item.image.set_alpha(256)
+                item.image = item.images[item.index]
 
-    # 파괴 애니메이션을 렌더링하는 데 사용되는 파괴된 적 항공기 그룹에 적중된 적 항공기 개체를 추가합니다.
-    enemies1_down = pygame.sprite.groupcollide(enemies1, player.bullets, 1, 1)
-    for enemy_down in enemies1_down:
-        enemies_down.add(enemy_down)
+    # 적1과 총알이 충돌할 시 적을 반환함. 충돌한 개체는 제거
+    enemies1_collides = pygame.sprite.groupcollide(enemies1, player.bullets, 1, 1)
+    for enemy in enemies1_collides:
+        enemies1_down.add(enemy)
 
+    # 적2과 총알이 충돌할 시 적을 반환함. 충돌한 총알만 제거
+    enemies2_collides = pygame.sprite.groupcollide(enemies2, player.bullets, 0, 1)
+    for enemy in enemies2_collides:
+        enemy.damage(player.bullet)
+        if enemy.health < enemy.maxHealth/2:
+            enemy.image = enemy.enemy2_damage_img
+        if enemy.health <= 0:
+            score += 100
+            enemies2.remove(enemy)
+            enemies2_down.add(enemy)
+    
     # 배경 그리기
     screen.fill(0)
     screen.blit(background, (0, 0))
@@ -219,16 +250,16 @@ while running:
         if player_down_index > 47:
             running = False
 
-    # 난파선 애니메이션 그리기
-    for enemy_down in enemies_down:
+    # 적1 파괴 애니메이션 그리기
+    for enemy_down in enemies1_down:
         if enemy_down.down_index == 0:
             enemy1_down_sound.play()
         if enemy_down.down_index > 7:
-            enemies_down.remove(enemy_down)
+            enemies1_down.remove(enemy_down)
             score += 10
             index = random.randint(0, 1)
             if index <= 1:
-                item = Item(bullet_item_img, bomb_item_img, index, enemy_down.rect.center)
+                item = Item(bullet_item_img, bomb_item_img, bullet_item_alpha_img, bomb_item_alpha_img, index, enemy_down.rect.center)
                 items.add(item)
             continue
         screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
@@ -238,7 +269,11 @@ while running:
     player.bullets.draw(screen)
     player.bombs.draw(screen)
     enemies1.draw(screen)
+    enemies2.draw(screen)
     items.draw(screen)
+
+    for enemy in enemies2:
+        enemy.bullets.draw(screen)
 
     #생명력 UI 그리기
     for i in range(player.health):
