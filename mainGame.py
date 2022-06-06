@@ -379,12 +379,12 @@ while running:
     # 업데이트 화면
     pygame.display.update()
 
+    # 이벤트 수신
     for event in pygame.event.get():
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
                 if player.bomb > 0:
                     out_porp_sound.play()
-                    player.bomb -= 1
                     player.throw(bomb_img)
         if event.type == pygame.QUIT:
             pygame.quit()

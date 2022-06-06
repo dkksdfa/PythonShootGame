@@ -18,12 +18,13 @@ TYPE_SMALL = 1
 TYPE_MIDDLE = 2
 TYPE_BIG = 3
 
+#아이템
 class Item(pygame.sprite.Sprite):
     def __init__(self, bullet_item_img, bomb_item_img, bullet_item_alpha_img, bomb_item_alpha_img, item_index, init_pos):
         pygame.sprite.Sprite.__init__(self)
         self.images = [bullet_item_img, bomb_item_img]
         self.images_alpha = [bullet_item_alpha_img, bomb_item_alpha_img]
-        self.index = item_index
+        self.index = item_index                                             # 0: 총알아이템, 1: 폭탄아이템
         self.image = self.images[self.index]
         self.rect = self.image.get_rect()
         self.rect.center = init_pos
@@ -47,6 +48,7 @@ class Bullet(pygame.sprite.Sprite):
     def move(self):
         self.rect.top -= self.speed
 
+#폭탄
 class Bomb(pygame.sprite.Sprite):
     def __init__(self, bomb_img, init_pos):
         pygame.sprite.Sprite.__init__(self)
@@ -81,6 +83,7 @@ class Player(pygame.sprite.Sprite):
         self.bullet = 1                                 # 총알
 
     def throw(self, bomb_img):
+        self.bomb -= 1
         bomb = Bomb(bomb_img, (self.rect.midtop))
         self.bombs.add(bomb)
 
