@@ -6,6 +6,7 @@ Created on Wed Sep 11 11:05:00 2013
 """
 
 from copy import deepcopy
+from turtle import isdown
 from numpy import vander
 import pygame
 from sys import exit
@@ -102,6 +103,7 @@ enemies2 = pygame.sprite.Group()
 enemies2_down = pygame.sprite.Group()
 enemies2_bullets_temp = pygame.sprite.Group()
 
+# 보스2 매개변수 정의
 boss_rect = []
 boss_rect.append(pygame.Rect(338, 752, 164, 255)) # 보스 평상시1
 boss_rect.append(pygame.Rect(507, 752, 164, 255)) # 보스 평상시2
@@ -112,6 +114,7 @@ boss_rect.append(pygame.Rect(845, 752, 157, 255)) # 보스 파괴3
 boss_rect.append(pygame.Rect(164, 488, 164, 255)) # 보스 파괴4
 boss_rect.append(pygame.Rect(676, 752, 164, 255)) # 보스 파괴5
 bosses = pygame.sprite.Group()
+boss_down = pygame.sprite.Group()
 
 items = pygame.sprite.Group()
 
@@ -132,6 +135,9 @@ while running:
     #폭탄 이동, 타이머가 다 되면 폭발
     for bomb in player.bombs:
         bomb.move()
+        bomb.timer -= 1
+        
+        #타이머가 다되면 폭발, 모든 적1 파괴
         if (bomb.timer < 0):
             use_bomb_sound.play()
             player.bombs.remove(bomb)
@@ -161,7 +167,7 @@ while running:
         enemies1.add(enemy1)
     enemy_frequency += 1
 
-    # 적2 생성
+    # 적2 생성, 점수 200점마다 생성
     if (score%200 == 0 and score>50) and len(enemies2) == 0 and len(bosses) == 0:        
         enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (160, 0))
         enemies2.add(enemy2)
@@ -169,7 +175,7 @@ while running:
         enemies2.add(enemy2)
 
     #보스 생성
-    if (score%1000 == 0 and score>50) and len(bosses) == 0 and len(enemies2) == 0:
+    if (score%100 == 0 and score>50) and len(bosses) == 0:
         bosses.add(Boss(boss_rect, plane_img, (SCREEN_WIDTH/2, 0)))
 
     # 적1 이동, 창 범위를 초과하면 삭제
@@ -204,7 +210,7 @@ while running:
     for boss in bosses:
         if boss.rect.bottom < 200:
             boss.move()
-        if boss_shoot_frequency % 40 == 0:
+        if boss_shoot_frequency % 50 == 0:
             boss.shoot(bullet_img, player.rect)
         for bullet in boss.bullets:
             bullet.move()
@@ -277,12 +283,14 @@ while running:
             enemies2_bullets_temp.add(enemy.bullets)
             enemies2_down.add(enemy)
     
+    # 보스와 총알이 충돌할 시 보스를 반환함, 충돌한 총알만 제거
     boss_collides = pygame.sprite.groupcollide(bosses, player.bullets, 0, 1)
     for boss in boss_collides:
         boss.damage(player.bullet)
         if boss.health <= 0:
             boss_down_sound.play()
             score += 100
+            boss_down.add(boss)
             bosses.remove(boss)
 
     # 배경 그리기
@@ -337,7 +345,16 @@ while running:
 
     #보스 애니메이션
     for boss in bosses:
-        boss.animation()
+        if boss.health > 0:
+            boss.animation()
+    
+    #보스 파괴 애니메이션
+    for boss in boss_down:
+        if boss.downIndex < 64:
+            boss.image = boss.imageList[boss.downIndex//8]
+        else:
+            boss_down.remove(boss)
+        boss.downIndex += 1
 
     # 총알, 폭탄, 적, 아이템 그리기
     player.bullets.draw(screen)
@@ -347,6 +364,7 @@ while running:
     items.draw(screen)
     enemies2_bullets_temp.draw(screen)
     bosses.draw(screen)
+    boss_down.draw(screen)
 
     # 적 총알 그리기
     for enemy in enemies2:

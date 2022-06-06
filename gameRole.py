@@ -59,7 +59,6 @@ class Bomb(pygame.sprite.Sprite):
         self.timer = 80
     def move(self):
         self.rect.top -= self.speed
-        self.timer -= 1
 
 # 플레이어 클래스
 class Player(pygame.sprite.Sprite):
@@ -88,7 +87,7 @@ class Player(pygame.sprite.Sprite):
         self.bombs.add(bomb)
 
     def shoot(self, bullet_img):
-        bulletsWidth = (self.bullet*12-3)/2+7
+        bulletsWidth = (self.bullet*12-3)/2+14
         for i in range(0, self.bullet):
             posX = (self.rect.centerx-bulletsWidth)+i*12
             posY = self.rect.top
@@ -120,9 +119,9 @@ class Player(pygame.sprite.Sprite):
             self.rect.left += self.speed
     def damage(self):
         self.is_hit = True
-        self.health -= 1
+        #self.health -= 1
 
-# 적군
+# 적1
 class Enemy1(pygame.sprite.Sprite):
     def __init__(self, enemy_img, enemy_down_imgs, init_pos):
        pygame.sprite.Sprite.__init__(self)
@@ -141,6 +140,7 @@ class Enemy1(pygame.sprite.Sprite):
         elif self.moveInt == 2:
             self.rect.left -= self.rect.top*0.01
 
+# 적2
 class Enemy2(pygame.sprite.Sprite):
     def __init__(self, enemy2_img, enemy2_damage_img, enemy2_down_imgs, init_pos):
        pygame.sprite.Sprite.__init__(self)
@@ -173,6 +173,7 @@ class Enemy2(pygame.sprite.Sprite):
             bullet = BulletEnemy(bullet_img, self.rect.midbottom, i)
             self.bullets.add(bullet)
 
+#적2 총알
 class BulletEnemy(pygame.sprite.Sprite):
     def __init__(self, bullet_img, init_pos, coefficient):
         pygame.sprite.Sprite.__init__(self)
@@ -185,6 +186,7 @@ class BulletEnemy(pygame.sprite.Sprite):
         self.rect.top += self.speed
         self.rect.left += self.rect.top*self.coefficient
 
+#보스
 class Boss(pygame.sprite.Sprite):
     def __init__(self, boss_rect, plane_img, init_pos):
         pygame.sprite.Sprite.__init__(self)
@@ -200,6 +202,8 @@ class Boss(pygame.sprite.Sprite):
         self.aniIndex = 0
         self.maxHealth = 1000
         self.health = self.maxHealth
+        self.isDown = False
+        self.downIndex = 24
     def shoot(self, bullet_img, player_pos):
         # m = (x2 - x1) / (y2 - y1)
         # y-y1 = m(x-x1)
@@ -213,9 +217,6 @@ class Boss(pygame.sprite.Sprite):
         self.bullets.add(bullet)
     def move(self):
         self.rect.top += self.speed
-    def death(self, down_index):
-        if down_index:
-            self.image = self.imageList[1]
     def animation(self):
         if self.health < self.maxHealth/2:
             self.image = self.imageList[2]
@@ -227,6 +228,7 @@ class Boss(pygame.sprite.Sprite):
     def damage(self, damage):
         self.health -= damage 
 
+#보스 총알
 class BulletBoss(pygame.sprite.Sprite):
     def __init__(self, bullet_img, init_pos, move_lambda):
         pygame.sprite.Sprite.__init__(self)
