@@ -24,6 +24,11 @@ clock = pygame.time.Clock()
 bullet_sound = pygame.mixer.Sound('resources/sound/bullet.wav')
 enemy1_down_sound = pygame.mixer.Sound('resources/sound/enemy1_down.wav')
 game_over_sound = pygame.mixer.Sound('resources/sound/game_over.wav')
+enemy2_down_sound = pygame.mixer.Sound('resources/sound/enemy2_down.wav')
+boss_down_sound = pygame.mixer.Sound('resources/sound/boss_down.wav')
+use_bomb_sound = pygame.mixer.Sound('resources/sound/use_bomb.mp3')
+get_item_sound = pygame.mixer.Sound('resources/sound/get_item.mp3')
+out_porp_sound = pygame.mixer.Sound('resources/sound/out_porp.mp3')
 bullet_sound.set_volume(0.3)
 enemy1_down_sound.set_volume(0.3)
 game_over_sound.set_volume(0.3)
@@ -128,6 +133,7 @@ while running:
     for bomb in player.bombs:
         bomb.move()
         if (bomb.timer < 0):
+            use_bomb_sound.play()
             player.bombs.remove(bomb)
             for enemy in enemies1:
                 enemies1_down.add(enemy)
@@ -163,7 +169,7 @@ while running:
         enemies2.add(enemy2)
 
     #보스 생성
-    if (score%100 == 0 and score>50) and len(bosses) == 0 and len(enemies2) == 0:
+    if (score%1000 == 0 and score>50) and len(bosses) == 0 and len(enemies2) == 0:
         bosses.add(Boss(boss_rect, plane_img, (SCREEN_WIDTH/2, 0)))
 
     # 적1 이동, 창 범위를 초과하면 삭제
@@ -217,8 +223,11 @@ while running:
     for item in items:
         item.move()
         item.time += 1
+
         # 플레이어가 아이템을 획득했는지 확인
         if pygame.sprite.collide_rect(item, player):
+            get_item_sound.play()
+
             #아이템 획득 이벤트
             if item.index == 0 and player.bullet < 8:
                 player.bullet += 1
@@ -262,6 +271,7 @@ while running:
         if enemy.health < enemy.maxHealth/2:
             enemy.image = enemy.enemy2_damage_img
         if enemy.health <= 0:
+            enemy2_down_sound.play()
             score += 100
             enemies2.remove(enemy)
             enemies2_bullets_temp.add(enemy.bullets)
@@ -271,7 +281,8 @@ while running:
     for boss in boss_collides:
         boss.damage(player.bullet)
         if boss.health <= 0:
-            score += 1000
+            boss_down_sound.play()
+            score += 100
             bosses.remove(boss)
 
     # 배경 그리기
@@ -304,7 +315,7 @@ while running:
         if enemy_down.down_index > 7:
             enemies1_down.remove(enemy_down)
             score += 10
-            index = random.randint(0, 1)
+            index = random.randint(0, 9) # 20%
             if index <= 1:
                 item = Item(bullet_item_img, bomb_item_img, bullet_item_alpha_img, bomb_item_alpha_img, index, enemy_down.rect.center)
                 items.add(item)
@@ -337,17 +348,19 @@ while running:
     enemies2_bullets_temp.draw(screen)
     bosses.draw(screen)
 
+    # 적 총알 그리기
     for enemy in enemies2:
         enemy.bullets.draw(screen)
 
+    # 보스 총알 그리기
     for boss in bosses:
         boss.bullets.draw(screen)
 
     #생명력 UI 그리기
     for i in range(player.health):
         screen.blit(black_heart, (i*30+10, 5))
-    for i in range(1, player.maxHealth - player.health + 1):
-        screen.blit(white_heart, ((player.health-1)*30+10+(i*30), 5))
+    for i in range(player.maxHealth - player.health):
+        screen.blit(white_heart, ((player.health)*30+10+(i*30), 5))
 
     # 폭탄 UI 그리기
     for i in range(player.bomb):
@@ -370,6 +383,7 @@ while running:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_LSHIFT or event.key == pygame.K_RSHIFT:
                 if player.bomb > 0:
+                    out_porp_sound.play()
                     player.bomb -= 1
                     player.throw(bomb_img)
         if event.type == pygame.QUIT:
