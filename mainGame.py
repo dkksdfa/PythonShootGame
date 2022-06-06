@@ -6,6 +6,7 @@ Created on Wed Sep 11 11:05:00 2013
 """
 
 from copy import deepcopy
+from numpy import vander
 import pygame
 from sys import exit
 from pygame.locals import *
@@ -55,7 +56,7 @@ player_pos = [200, 600]
 player = Player(plane_img, player_rect, player_pos)
 
 # 총알
-bullet_img = plane_img.subsurface(pygame.Rect(1004, 987, 9, 21))
+bullet_img = plane_img.subsurface(pygame.Rect(1004, 987, 9, 21)).convert_alpha()
 
 # 총알 아이템
 bullet_item_img = plane_img.subsurface(pygame.Rect(269, 398, 54, 86))
@@ -96,12 +97,23 @@ enemies2 = pygame.sprite.Group()
 enemies2_down = pygame.sprite.Group()
 enemies2_bullets_temp = pygame.sprite.Group()
 
+boss_rect = []
+boss_rect.append(pygame.Rect(338, 752, 164, 255)) # 보스 평상시1
+boss_rect.append(pygame.Rect(507, 752, 164, 255)) # 보스 평상시2
+boss_rect.append(pygame.Rect(169, 752, 164, 255)) # 보스 데미지
+boss_rect.append(pygame.Rect(0, 488, 164, 255)) # 보스 파괴1
+boss_rect.append(pygame.Rect(0, 225, 164, 255)) # 보스 파괴2
+boss_rect.append(pygame.Rect(845, 752, 157, 255)) # 보스 파괴3
+boss_rect.append(pygame.Rect(164, 488, 164, 255)) # 보스 파괴4
+boss_rect.append(pygame.Rect(676, 752, 164, 255)) # 보스 파괴5
+bosses = pygame.sprite.Group()
+
 items = pygame.sprite.Group()
 
 shoot_frequency = 0
 enemy_frequency = 0
 enemy_shoot_frequency = 0
-
+boss_shoot_frequency = 0
 player_down_index = 16
 
 score = 0
@@ -112,29 +124,6 @@ while running:
     # 게임의 최대 프레임 속도를 60으로 제어
     clock.tick(60)
 
-    # 총알 발사 빈도 및 총알 발사 빈도 제어
-    if player.health > 0:
-        if shoot_frequency % 5 == 0:
-            bullet_sound.play()
-            player.shoot(bullet_img)
-        shoot_frequency += 1
-        if shoot_frequency >= 15:
-            shoot_frequency = 0
-
-    # 적1 생성
-    if enemy_frequency % 30 == 0:
-        enemy1_pos = [random.randint(0, SCREEN_WIDTH - enemy1_rect.width), 0]
-        enemy1 = Enemy1(enemy1_img, enemy1_down_imgs, enemy1_pos)
-        enemies1.add(enemy1)
-    enemy_frequency += 1
-
-    # 적2 생성
-    if (score%100 == 0 or score>50) and len(enemies2) == 0:        
-        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (160, 0))
-        enemies2.add(enemy2)
-        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (320, 0))
-        enemies2.add(enemy2)
-
     #폭탄 이동, 타이머가 다 되면 폭발
     for bomb in player.bombs:
         bomb.move()
@@ -144,17 +133,44 @@ while running:
                 enemies1_down.add(enemy)
                 enemies1.remove(enemy)
 
+    # 총알 발사 빈도 및 총알 발사 빈도 제어
+    if player.health > 0:
+        if shoot_frequency % 5 == 0:
+            bullet_sound.play()
+            player.shoot(bullet_img)
+        shoot_frequency += 1
+        if shoot_frequency >= 15:
+            shoot_frequency = 0
+
     # 총알 이동, 창 범위를 초과하면 삭제
     for bullet in player.bullets:
         bullet.move()
         if bullet.rect.bottom < 0:
             player.bullets.remove(bullet)
 
-    # 적 이동, 창 범위를 초과하면 삭제
+    # 적1 생성
+    if enemy_frequency % 30 == 0:
+        enemy1_pos = [random.randint(0, SCREEN_WIDTH - enemy1_rect.width), 0]
+        enemy1 = Enemy1(enemy1_img, enemy1_down_imgs, enemy1_pos)
+        enemies1.add(enemy1)
+    enemy_frequency += 1
+
+    # 적2 생성
+    if (score%200 == 0 and score>50) and len(enemies2) == 0 and len(bosses) == 0:        
+        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (160, 0))
+        enemies2.add(enemy2)
+        enemy2 = Enemy2(enemy2_img, enemy2_damage_img, enemy2_down_imgs, (320, 0))
+        enemies2.add(enemy2)
+
+    #보스 생성
+    if (score%100 == 0 and score>50) and len(bosses) == 0 and len(enemies2) == 0:
+        bosses.add(Boss(boss_rect, plane_img, (SCREEN_WIDTH/2, 0)))
+
+    # 적1 이동, 창 범위를 초과하면 삭제
     for enemy1 in enemies1:
         enemy1.move()
         # 플레이어가 공격을 받았는지 확인
-        if pygame.sprite.collide_circle(enemy1, player):
+        if pygame.sprite.collide_rect(enemy1, player):
             enemies1_down.add(enemy1)
             enemies1.remove(enemy1)
             player.damage()
@@ -164,19 +180,36 @@ while running:
         if enemy1.rect.top > SCREEN_HEIGHT:
             enemies1.remove(enemy1)
 
+    # 적2 이동, 총알 이동, 창 범위를 초과하면 삭제
     for enemy2 in enemies2:
         enemy2.move()
-        for enemy2_bullt in enemy2.bullets:
-            enemy2_bullt.move()
-            if pygame.sprite.collide_circle(enemy2_bullt, player):
-                enemy2.bullets.remove(enemy2_bullt)
+        for bullt in enemy2.bullets:
+            bullt.move()
+            if pygame.sprite.collide_rect(bullt, player):
+                enemy2.bullets.remove(bullt)
                 player.damage()
-            if enemy2_bullt.rect.top > SCREEN_HEIGHT:
-                enemy2.bullets.remove(enemy2_bullt)
-        if enemy_shoot_frequency % 60 == 0:
+            if bullt.rect.top > SCREEN_HEIGHT:
+                enemy2.bullets.remove(bullt)
+        if enemy_shoot_frequency % 90 == 0:
             enemy2.shoot(bullet_img)
     enemy_shoot_frequency += 1
 
+    #보스 이동
+    for boss in bosses:
+        if boss.rect.bottom < 200:
+            boss.move()
+        if boss_shoot_frequency % 40 == 0:
+            boss.shoot(bullet_img, player.rect)
+        for bullet in boss.bullets:
+            bullet.move()
+            if pygame.sprite.collide_rect(bullet, player):
+                player.damage()
+                boss.bullets.remove(bullet)
+            if bullet.rect.top > SCREEN_HEIGHT:
+                boss.bullets.remove(bullet)
+    boss_shoot_frequency += 1
+
+    #적 총알 이동
     for bullets in enemies2_bullets_temp:
         bullets.move()
 
@@ -185,7 +218,7 @@ while running:
         item.move()
         item.time += 1
         # 플레이어가 아이템을 획득했는지 확인
-        if pygame.sprite.collide_circle(item, player):
+        if pygame.sprite.collide_rect(item, player):
             #아이템 획득 이벤트
             if item.index == 0 and player.bullet < 8:
                 player.bullet += 1
@@ -234,6 +267,13 @@ while running:
             enemies2_bullets_temp.add(enemy.bullets)
             enemies2_down.add(enemy)
     
+    boss_collides = pygame.sprite.groupcollide(bosses, player.bullets, 0, 1)
+    for boss in boss_collides:
+        boss.damage(player.bullet)
+        if boss.health <= 0:
+            score += 1000
+            bosses.remove(boss)
+
     # 배경 그리기
     screen.fill(0)
     screen.blit(background, (0, 0))
@@ -272,6 +312,7 @@ while running:
         screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
         enemy_down.down_index += 1
 
+    # 적2 파괴 애니메이션 그리기
     for enemy_down in enemies2_down:
         if enemy_down.down_index > 5:
             enemies2_down.remove(enemy_down)
@@ -283,6 +324,10 @@ while running:
         screen.blit(enemy_down.down_imgs[enemy_down.down_index // 2], enemy_down.rect)
         enemy_down.down_index += 1
 
+    #보스 애니메이션
+    for boss in bosses:
+        boss.animation()
+
     # 총알, 폭탄, 적, 아이템 그리기
     player.bullets.draw(screen)
     player.bombs.draw(screen)
@@ -290,9 +335,13 @@ while running:
     enemies2.draw(screen)
     items.draw(screen)
     enemies2_bullets_temp.draw(screen)
+    bosses.draw(screen)
 
     for enemy in enemies2:
         enemy.bullets.draw(screen)
+
+    for boss in bosses:
+        boss.bullets.draw(screen)
 
     #생명력 UI 그리기
     for i in range(player.health):

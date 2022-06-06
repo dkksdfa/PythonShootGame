@@ -92,14 +92,14 @@ while running:
 
     #screen.blit(plane_img.subsurface(830, 693, 23, 53), (0, 0)) 폭탄
     
-    #screen.blit(plane_img.subsurface(169, 752, 164, 255), (0, 0)) #보스
-    #screen.blit(plane_img.subsurface(338, 752, 164, 255), (0,0)) #보스
-    #screen.blit(plane_img.subsurface(507, 752, 164, 255), (0, 0)) #보스
-    #screen.blit(plane_img.subsurface(676, 752, 164, 255), (0, 0)) #보스
-    #screen.blit(plane_img.subsurface(845, 752, 157, 255), (0, 0)) #보스
-    #screen.blit(plane_img.subsurface(0, 225, 164, 255),(0,0)) #보스
-    #screen.blit(plane_img.subsurface(0, 488, 164, 255),(0,0)) #보스
-    #screen.blit(plane_img.subsurface(164, 488, 164, 255),(0,0)) #보스
+    #screen.blit(plane_img.subsurface(338, 752, 164, 255), (0,0)) #보스_평상시1
+    #screen.blit(plane_img.subsurface(507, 752, 164, 255), (0, 0)) #보스_평상시2
+    screen.blit(plane_img.subsurface(169, 752, 164, 255), (0, 0)) #보스 데미지
+    #screen.blit(plane_img.subsurface(0, 488, 164, 255),(0,0)) #보스 파괴 1
+    #screen.blit(plane_img.subsurface(0, 225, 164, 255),(0,0)) #보스 파괴 2
+    #screen.blit(plane_img.subsurface(845, 752, 157, 255), (0, 0)) #보스 파괴 3
+    #screen.blit(plane_img.subsurface(164, 488, 164, 255),(0,0)) #보스 파괴 4
+    #screen.blit(plane_img.subsurface(676, 752, 164, 255), (0, 0)) #보스 파괴 5
 
     #screen.blit(plane_img.subsurface(1, 4, 67, 87), (0,0)) #적 평상시
     #screen.blit(plane_img.subsurface(433, 529, 67, 94), (0,0)) #적 데미지
@@ -107,7 +107,7 @@ while running:
     #screen.blit(plane_img.subsurface(604, 655, 67, 94), (0,0)) #적 파괴2
     #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) #적 파괴3
 
-    screen.blit(plane_img.subsurface(0, 99, 102, 126), (20,0)) # 플레이어
+    #screen.blit(plane_img.subsurface(0, 99, 102, 126), (20,0)) # 플레이어
     #screen.blit(plane_img.subsurface(673, 655, 70, 94), (0,0)) # 플레이어
     # 업데이트 화면
     pygame.display.update()

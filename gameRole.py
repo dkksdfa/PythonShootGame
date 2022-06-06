@@ -5,6 +5,7 @@ Created on Wed Sep 11 16:36:03 2013
 @author: Leo
 """
 
+from re import X
 from turtle import right
 import pygame
 import random
@@ -65,7 +66,7 @@ class Player(pygame.sprite.Sprite):
         self.image = []                                 # 플레이어 오브젝트 스프라이트 이미지를 저장할 목록
         for i in range(len(player_rect)):
             image = plane_img.subsurface(player_rect[i])
-            image = pygame.transform.scale(image, (68,84))
+            image = pygame.transform.scale(image, (68,84)).convert_alpha()
             self.image.append(image)
         self.rect = player_rect[0]                      # 이미지가 위치한 사각형 초기화
         self.rect.topleft = init_pos                    # 사각형의 왼쪽 위 모서리 좌표를 초기화합니다.
@@ -74,7 +75,7 @@ class Player(pygame.sprite.Sprite):
         self.bombs = pygame.sprite.Group()              # 발사된 폭탄 모음
         self.img_index = 0                              # 플레이어 스프라이트 이미지 인덱스
         self.is_hit = False                             # 플레이어가 맞았는지 여부
-        self.maxHealth = 1000                              # 최대 생명력
+        self.maxHealth = 3                              # 최대 생명력
         self.health = self.maxHealth                    # 생명력
         self.bomb = 0                                   # 폭탄
         self.bullet = 1                                 # 총알
@@ -180,3 +181,57 @@ class BulletEnemy(pygame.sprite.Sprite):
     def move(self):
         self.rect.top += self.speed
         self.rect.left += self.rect.top*self.coefficient
+
+class Boss(pygame.sprite.Sprite):
+    def __init__(self, boss_rect, plane_img, init_pos):
+        pygame.sprite.Sprite.__init__(self)
+        self.imageList = []
+        for i in range(len(boss_rect)):
+            image = plane_img.subsurface(boss_rect[i]).convert_alpha()
+            self.imageList.append(image)
+        self.image = self.imageList[0]
+        self.rect = self.image.get_rect()
+        self.rect.midbottom = init_pos
+        self.bullets = pygame.sprite.Group()
+        self.speed = 1
+        self.aniIndex = 0
+        self.maxHealth = 1000
+        self.health = self.maxHealth
+    def shoot(self, bullet_img, player_pos):
+        # m = (x2 - x1) / (y2 - y1)
+        # y-y1 = m(x-x1)
+        # (y-y1)/m+x1
+        move_lambda = lambda y: self.rect.centerx
+        if self.rect.centerx != player_pos.centerx:
+            m = (self.rect.centery - player_pos.centery) / (self.rect.centerx - player_pos.centerx)
+            move_lambda = lambda y: (y-self.rect.centery)/m+self.rect.centerx
+            
+        bullet = BulletBoss(bullet_img, self.rect.midbottom, move_lambda)
+        self.bullets.add(bullet)
+    def move(self):
+        self.rect.top += self.speed
+    def death(self, down_index):
+        if down_index:
+            self.image = self.imageList[1]
+    def animation(self):
+        if self.health < self.maxHealth/2:
+            self.image = self.imageList[2]
+        else:
+            self.image = self.imageList[self.aniIndex//8]
+            self.aniIndex += 1
+            if self.aniIndex > 15:
+                self.aniIndex = 0
+    def damage(self, damage):
+        self.health -= damage 
+
+class BulletBoss(pygame.sprite.Sprite):
+    def __init__(self, bullet_img, init_pos, move_lambda):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = bullet_img
+        self.rect = self.image.get_rect()
+        self.rect.midtop = init_pos
+        self.speed = 3
+        self.moveLambda = move_lambda
+    def move(self):
+        self.rect.top += self.speed
+        self.rect.centerx = self.moveLambda(self.rect.top)
