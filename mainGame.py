@@ -73,7 +73,7 @@ bullet_item_alpha_img.set_alpha(128)
 
 # 폭탄
 bomb_img = plane_img.subsurface(pygame.Rect(830, 693, 23, 53))
-
+bomb_ui_img = pygame.transform.scale(bomb_img,(15, 30))
 # 폭탄 아이템
 bomb_item_img  = plane_img.subsurface(pygame.Rect(105, 120, 55, 102))
 bomb_item_img = pygame.transform.scale(bomb_item_img, (40, 65))
@@ -382,8 +382,7 @@ while running:
 
     # 폭탄 UI 그리기
     for i in range(player.bomb):
-        bomb_img = pygame.transform.scale(bomb_img,(15, 30))
-        screen.blit(bomb_img, ((i*20+10)+(player.maxHealth*30+15), 5))
+        screen.blit(bomb_ui_img, ((i*20+10)+(player.maxHealth*30+15), 5))
         
     # 점수 UI 그리기
     score_font = pygame.font.Font(None, 36)

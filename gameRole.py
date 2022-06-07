@@ -87,9 +87,10 @@ class Player(pygame.sprite.Sprite):
         self.bombs.add(bomb)
 
     def shoot(self, bullet_img):
-        bulletsWidth = (self.bullet*12-3)/2+14
-        for i in range(0, self.bullet):
-            posX = (self.rect.centerx-bulletsWidth)+i*12
+        bulletsWidth = (self.bullet*12-3)/2                  #총알들 너비의 절반
+        bulletsStartPos = self.rect.centerx-14-bulletsWidth  #총알들 시작지점
+        for i in range(self.bullet):
+            posX = bulletsStartPos+i*12
             posY = self.rect.top
             bullet = Bullet(bullet_img, (posX, posY))
             self.bullets.add(bullet)
